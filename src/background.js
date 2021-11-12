@@ -6,6 +6,7 @@ import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 import Store from 'electron-store'
 import path from 'path'
 
+const installVueDevtoolsOnReady = false
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 Store.initRenderer()
@@ -89,7 +90,7 @@ app.on('activate', () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
-  if (isDevelopment && !process.env.IS_TEST) {
+  if (installVueDevtoolsOnReady && isDevelopment && !process.env.IS_TEST) {
     // Install Vue Devtools
     try {
       await installExtension(VUEJS_DEVTOOLS)
