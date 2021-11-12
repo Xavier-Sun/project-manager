@@ -8,8 +8,11 @@ Vue.config.productionTip = false
 
 Vue.prototype.$store = new Store();
 
-new Vue({
+const app = new Vue({
   vuetify,
   router,
   render: h => h(App)
 }).$mount('#app')
+
+const darkMode = Vue.prototype.$store.get("settings.darkMode")
+app.$vuetify.theme.dark = darkMode ? darkMode : false
