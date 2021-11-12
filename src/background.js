@@ -48,6 +48,8 @@ async function createWindow() {
   const win = new BrowserWindow({
     width: 800,
     height: 600,
+    title: 'Project Manager',
+    icon: path.join(__static, 'favicon.ico'),
     webPreferences: {
 
       // Use pluginOptions.nodeIntegration, leave this alone
