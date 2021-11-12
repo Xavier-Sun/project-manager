@@ -8,14 +8,15 @@
 export default {
   name: "Settings",
 
-  data: () => ({
-    darkMode: false,
-  }),
-
-  watch: {
-    darkMode(newValue) {
-      this.$vuetify.theme.dark = newValue;
-      this.$store.set("settings.darkMode", newValue);
+  computed: {
+    darkMode: {
+      get() {
+        return this.$vuetify.theme.dark;
+      },
+      set(newValue) {
+        this.$vuetify.theme.dark = newValue;
+        this.$store.set("settings.darkMode", newValue);
+      },
     },
   },
 };
