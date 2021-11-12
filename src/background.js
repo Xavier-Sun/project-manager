@@ -1,14 +1,42 @@
 'use strict'
 
-import { app, protocol, BrowserWindow } from 'electron'
+import { app, protocol, BrowserWindow, Menu, shell } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
-
 import Store from 'electron-store'
+import path from 'path'
+
+const isDevelopment = process.env.NODE_ENV !== 'production'
 
 Store.initRenderer()
 
-const isDevelopment = process.env.NODE_ENV !== 'production'
+Menu.setApplicationMenu(Menu.buildFromTemplate([
+  {
+    label: 'View',
+    submenu: [
+      { role: 'reload' },
+      { role: 'forceReload' },
+      { role: 'toggleDevTools' },
+    ],
+  },
+  {
+    label: 'Help',
+    submenu: [
+      {
+        label: 'Documentation',
+        click: async () => {
+          await shell.openExternal('https://electronjs.org')
+        },
+      },
+      { type: 'separator' },
+      {
+        label: 'Show config.json in folder', click() {
+          shell.showItemInFolder(path.join(app.getPath('userData'), 'config.json'))
+        }
+      },
+    ],
+  },
+]))
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
