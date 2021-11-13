@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, protocol, BrowserWindow, Menu, shell } from 'electron'
+import { app, protocol, BrowserWindow, Menu, shell, ipcMain, dialog } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 import Store from 'electron-store'
@@ -8,6 +8,8 @@ import path from 'path'
 
 const installVueDevtoolsOnReady = false
 const isDevelopment = process.env.NODE_ENV !== 'production'
+
+let mainWindow = null
 
 Store.initRenderer()
 
@@ -59,6 +61,8 @@ async function createWindow() {
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION
     }
   })
+
+  mainWindow = win
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
@@ -115,3 +119,12 @@ if (isDevelopment) {
     })
   }
 }
+
+ipcMain.on("select-directory", (event, message) => {
+  dialog.showOpenDialog(mainWindow, {
+    title: "Select a directory...",
+    properties: ['openDirectory', 'showHiddenFiles']
+  }).then((result) => {
+    event.returnValue = result.canceled ? null : result.filePaths[0]
+  })
+})
