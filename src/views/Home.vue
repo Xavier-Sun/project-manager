@@ -134,10 +134,19 @@
             <v-icon> mdi-dots-vertical </v-icon>
           </v-btn>
         </template>
-        <v-list>
+        <v-list dense>
           <v-list-item-group>
-            <v-list-item v-for="(action, index) in defaultActions" :key="index">
-              <v-list-item-title @click="action.do(item)">
+            <v-list-item
+              v-for="(action, index) in defaultActions"
+              :key="index"
+              @click="action.do(item)"
+            >
+              <v-list-item-icon>
+                <v-icon>
+                  {{ action.icon }}
+                </v-icon>
+              </v-list-item-icon>
+              <v-list-item-title>
                 {{ action.label }}
               </v-list-item-title>
             </v-list-item>
