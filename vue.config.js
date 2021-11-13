@@ -1,6 +1,6 @@
 module.exports = {
   transpileDependencies: [
-    'vuetify'
+    "vuetify"
   ],
   pluginOptions: {
     electronBuilder: {
@@ -9,9 +9,9 @@ module.exports = {
   },
   chainWebpack: config => {
     config
-      .plugin('html')
+      .plugin("html")
       .tap(args => {
-        args[0].title = 'Project Manager'
+        args[0].title = "Project Manager"
         return args
       })
   },
