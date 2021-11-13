@@ -2,12 +2,13 @@
   <v-data-table
     :headers="headers"
     :items="myProjects"
+    :search="search"
     disable-pagination
     hide-default-footer
   >
     <template #top>
       <v-toolbar flat>
-        <v-toolbar-title>My Projects</v-toolbar-title>
+        <v-toolbar-title> My Projects </v-toolbar-title>
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-spacer></v-spacer>
         <v-dialog v-model="dialogEdit" max-width="500px">
@@ -26,10 +27,17 @@
                   <v-row>
                     <v-col cols="12">
                       <v-text-field
+                        v-model="editedProject.directory"
+                        label="Directory"
+                        append-icon="mdi-dots-horizontal"
+                        @click:append="selectLocalPath(editedProject)"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-text-field
                         v-model="editedProject.name"
                         :rules="nameRules"
                         label="Name"
-                        required
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12">
@@ -40,14 +48,6 @@
                         multiple
                         :items="languages"
                       ></v-combobox>
-                    </v-col>
-                    <v-col cols="12">
-                      <v-text-field
-                        v-model="editedProject.localPath"
-                        label="Local Path"
-                        append-icon="mdi-dots-horizontal"
-                        @click:append="selectLocalPath(editedProject)"
-                      ></v-text-field>
                     </v-col>
                     <v-col cols="12">
                       <v-combobox
@@ -79,8 +79,8 @@
         <v-dialog v-model="dialogDelete" max-width="500px">
           <v-card>
             <v-card-title>
-              Are you sure you want to remove this project? This will not delete
-              local files.
+              <p>Are you sure you want to remove this project?</p>
+              <p>This will NOT delete local files.</p>
             </v-card-title>
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -90,10 +90,18 @@
               <v-btn color="red" text @click="removeProjectConfirm">
                 Remove
               </v-btn>
-              <v-spacer></v-spacer>
             </v-card-actions>
           </v-card>
         </v-dialog>
+      </v-toolbar>
+      <v-toolbar flat>
+        <v-text-field
+          v-model="search"
+          append-icon="mdi-magnify"
+          label="Search"
+          single-line
+          hide-details
+        ></v-text-field>
       </v-toolbar>
     </template>
     <template #[`item.name`]="{ item }">
@@ -108,6 +116,9 @@
     </template>
     <template #[`item.lastAccessTime`]="{ item }">
       {{ item.lastAccessTime }}
+    </template>
+    <template #[`item.directory`]="{ item }">
+      {{ item.directory }}
     </template>
     <template #[`item.labels`]="{ item }">
       <v-chip-group>
@@ -126,8 +137,8 @@
         <v-list>
           <v-list-item-group>
             <v-list-item v-for="(action, index) in defaultActions" :key="index">
-              <v-list-item-title @click="action.method(item)">
-                {{ action.description }}
+              <v-list-item-title @click="action.do(item)">
+                {{ action.label }}
               </v-list-item-title>
             </v-list-item>
           </v-list-item-group>
@@ -141,34 +152,18 @@
 </template>
 
 <script>
+import child_process from "child_process";
+import path from "path";
+import electron from "electron";
+
 export default {
   name: "Home",
 
   data: () => ({
-    languages: [
-      "C",
-      "C++",
-      "C#",
-      "Rust",
-      "Python",
-      "Java",
-      "JavaScript",
-      "Maxscript",
-    ],
+    languages: [],
+    labels: [],
 
-    labels: [
-      "NodeJS",
-      "VueJS",
-      "Unity",
-      "UE4",
-      "UE5",
-      "Windows",
-      "Linux",
-      "Cross Platform",
-      "CMake",
-      "C",
-      "C++",
-    ],
+    search: "",
 
     defaultActions: [],
 
@@ -178,10 +173,10 @@ export default {
     dialogDelete: false,
 
     headers: [
-      { text: "Name", value: "name", sortable: false },
+      { text: "Name", value: "name" },
       { text: "Languages", value: "languages", sortable: false },
       { text: "Last Access Time", value: "lastAccessTime" },
-      { text: "Local Path", value: "localPath", sortable: false },
+      { text: "Directory", value: "directory", sortable: false },
       { text: "Labels", value: "labels", sortable: false },
       { value: "actions", sortable: false },
     ],
@@ -193,14 +188,14 @@ export default {
       name: "New Project",
       languages: [],
       lastAccessTime: null,
-      localPath: null,
+      directory: null,
       labels: [],
     },
     defaultProject: {
       name: "New Project",
       languages: [],
       lastAccessTime: null,
-      localPath: null,
+      directory: null,
       labels: [],
     },
 
@@ -214,25 +209,60 @@ export default {
     this.defaultActions = [
       {
         icon: "mdi-pencil",
-        description: "Edit",
-        method: this.editProject,
+        label: "Edit",
+        do: this.editProject,
       },
       {
         icon: "mdi-delete",
-        description: "Remove",
-        method: this.removeProject,
+        label: "Remove",
+        do: this.removeProject,
       },
       {
         icon: "mdi-folder",
-        description: "Open in folder",
-        method: this.openProjectInFolder,
+        label: "Open in folder",
+        do: this.openProjectInFolder,
       },
       {
         icon: "mdi-microsoft-visual-studio-code",
-        description: "Open in Code",
-        method: this.openProjectInCode,
+        label: "Open in Visual Studio Code",
+        do: this.openProjectInCode,
       },
     ];
+
+    const languages = this.$store.get("userData.languages");
+    if (languages) {
+      this.languages = languages;
+    } else {
+      this.languages = [
+        "C",
+        "C++",
+        "C#",
+        "Java",
+        "JavaScript",
+        "Maxscript",
+        "Python",
+        "Rust",
+      ];
+      this.$store.set("userData.languages", this.languages);
+    }
+
+    const labels = this.$store.get("userData.labels");
+    if (labels) {
+      this.labels = labels;
+    } else {
+      this.labels = [
+        "NodeJS",
+        "VueJS",
+        "Unity",
+        "UE4",
+        "UE5",
+        "Windows",
+        "Linux",
+        "Cross Platform",
+        "CMake",
+      ];
+      this.$store.set("userData.labels", this.labels);
+    }
 
     this.myProjects = this.$store.get("userData.myProjects");
   },
@@ -300,21 +330,24 @@ export default {
     },
 
     openProjectInFolder(project) {
-      if (project.localPath) {
-        this.$electron.shell.openExternal(project.localPath);
+      if (project.directory) {
+        electron.shell.openExternal(project.directory);
       }
     },
 
     openProjectInCode(project) {
-      if (project.localPath) {
-        this.$exec(`code "${project.localPath}"`);
+      if (project.directory) {
+        child_process.exec(`code "${project.directory}"`);
       }
     },
 
     selectLocalPath(project) {
-      let directory = this.$electron.ipcRenderer.sendSync("select-directory");
+      let directory = electron.ipcRenderer.sendSync("select-directory");
       if (directory) {
-        project.localPath = directory;
+        project.directory = directory;
+        if (project.name === this.defaultProject.name) {
+          project.name = path.basename(directory);
+        }
       }
     },
 
