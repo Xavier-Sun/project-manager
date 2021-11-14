@@ -44,6 +44,40 @@ export default {
       },
     ],
   }),
+
+  mounted() {
+    const defaultLanguages = [
+      "C",
+      "C++",
+      "C#",
+      "Java",
+      "JavaScript",
+      "Maxscript",
+      "Python",
+      "Rust",
+    ];
+    const defaultLabels = [
+      { name: "NodeJS", commands: [] },
+      { name: "Unity", commands: [] },
+      { name: "Windows", commands: [] },
+      { name: "Linux", commands: [] },
+      { name: "CMake", commands: [] },
+      { name: "Cross Platform", commands: [] },
+      { name: "Git", commands: [] },
+    ];
+
+    this.setupUserData("languages", defaultLanguages);
+    this.setupUserData("labels", defaultLabels);
+    this.setupUserData("myProjects", []);
+  },
+
+  methods: {
+    setupUserData(property, defaultValue) {
+      if (!this.$store.get(`userData.${property}`)) {
+        this.$store.set(`userData.${property}`, defaultValue);
+      }
+    },
+  },
 };
 </script>
 
