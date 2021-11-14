@@ -289,7 +289,7 @@ export default {
 
     saveEditedProject() {
       if (this.editedIndex > -1) {
-        Object.assign(this.myProjects[this.editedIndex], this.editedProject);
+        this.$set(this.myProjects, this.editedIndex, this.editedProject);
       } else {
         this.myProjects.push(this.editedProject);
       }
