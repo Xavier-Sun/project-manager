@@ -55,7 +55,7 @@
                         label="Labels"
                         clearable
                         multiple
-                        :items="labels"
+                        :items="labelNames"
                       ></v-combobox>
                     </v-col>
                   </v-row>
@@ -64,12 +64,12 @@
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue" text @click="closeEditDialog"> Cancel </v-btn>
+              <v-btn color="blue" text @click="closeDialogEdit"> Cancel </v-btn>
               <v-btn
                 color="blue"
                 text
                 :disabled="!isEditFormValid"
-                @click="save"
+                @click="saveEditedProject"
               >
                 Save
               </v-btn>
@@ -84,7 +84,7 @@
             </v-card-title>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue" text @click="closeDeleteDialog">
+              <v-btn color="blue" text @click="closeDialogDelete">
                 Cancel
               </v-btn>
               <v-btn color="red" text @click="removeProjectConfirm">
@@ -109,7 +109,7 @@
     </template>
     <template #[`item.languages`]="{ item }">
       <v-chip-group>
-        <v-chip small v-for="language in item.languages" :key="language">
+        <v-chip small v-for="(language, index) in item.languages" :key="index">
           {{ language }}
         </v-chip>
       </v-chip-group>
@@ -122,14 +122,14 @@
     </template>
     <template #[`item.labels`]="{ item }">
       <v-chip-group>
-        <v-chip small v-for="label in item.labels" :key="label">
+        <v-chip small v-for="(label, index) in item.labels" :key="index">
           {{ label }}
         </v-chip>
       </v-chip-group>
     </template>
     <template #[`item.actions`]="{ item }">
       <v-menu bottom left>
-        <template v-slot:activator="{ on, attrs }">
+        <template #activator="{ on, attrs }">
           <v-btn icon v-bind="attrs" v-on="on">
             <v-icon> mdi-dots-vertical </v-icon>
           </v-btn>
@@ -154,9 +154,6 @@
         </v-list>
       </v-menu>
     </template>
-    <template #no-data>
-      <v-btn> Reset </v-btn>
-    </template>
   </v-data-table>
 </template>
 
@@ -169,8 +166,18 @@ export default {
   name: "Home",
 
   data: () => ({
-    languages: [],
     labels: [],
+    languages: [],
+    myProjects: [],
+
+    headers: [
+      { text: "Name", value: "name" },
+      { text: "Languages", value: "languages", sortable: false },
+      { text: "Last Access Time", value: "lastAccessTime" },
+      { text: "Directory", value: "directory", sortable: false },
+      { text: "Labels", value: "labels", sortable: false },
+      { text: "", value: "actions", sortable: false },
+    ],
 
     search: "",
 
@@ -180,17 +187,6 @@ export default {
 
     dialogEdit: false,
     dialogDelete: false,
-
-    headers: [
-      { text: "Name", value: "name" },
-      { text: "Languages", value: "languages", sortable: false },
-      { text: "Last Access Time", value: "lastAccessTime" },
-      { text: "Directory", value: "directory", sortable: false },
-      { text: "Labels", value: "labels", sortable: false },
-      { value: "actions", sortable: false },
-    ],
-
-    myProjects: [],
 
     editedIndex: -1,
     editedProject: {
@@ -209,10 +205,23 @@ export default {
     },
 
     nameRules: [
-      (v) => !!v || "Name is required",
-      (v) => (v && v.length <= 128) || "Name must be less than 128 characters",
+      (name) => !!name || "Name is required",
+      (name) =>
+        (name && name.length <= 128) || "Name must be less than 128 characters",
     ],
   }),
+
+  computed: {
+    labelNames() {
+      return this.labels.map((label) => {
+        return label.name;
+      });
+    },
+
+    formTitle() {
+      return this.editedIndex === -1 ? "Add Project" : "Edit Project";
+    },
+  },
 
   mounted() {
     this.defaultActions = [
@@ -238,68 +247,31 @@ export default {
       },
     ];
 
-    const languages = this.$store.get("userData.languages");
-    if (languages) {
-      this.languages = languages;
-    } else {
-      this.languages = [
-        "C",
-        "C++",
-        "C#",
-        "Java",
-        "JavaScript",
-        "Maxscript",
-        "Python",
-        "Rust",
-      ];
-      this.$store.set("userData.languages", this.languages);
-    }
-
-    const labels = this.$store.get("userData.labels");
-    if (labels) {
-      this.labels = labels;
-    } else {
-      this.labels = [
-        "NodeJS",
-        "VueJS",
-        "Unity",
-        "UE4",
-        "UE5",
-        "Windows",
-        "Linux",
-        "Cross Platform",
-        "CMake",
-      ];
-      this.$store.set("userData.labels", this.labels);
-    }
-
+    this.labels = this.$store.get("userData.labels");
+    this.languages = this.$store.get("userData.languages");
     this.myProjects = this.$store.get("userData.myProjects");
-  },
-
-  computed: {
-    formTitle() {
-      return this.editedIndex === -1 ? "Add" : "Edit";
-    },
   },
 
   watch: {
     dialogEdit(value) {
-      value || this.closeEditDialog();
+      value || this.closeDialogEdit();
     },
     dialogDelete(value) {
-      value || this.closeDeleteDialog();
+      value || this.closeDialogDelete();
+    },
+
+    myProjects(value) {
+      this.$store.set("userData.myProjects", value);
     },
   },
 
   methods: {
     removeProjectConfirm() {
       this.myProjects.splice(this.editedIndex, 1);
-      this.closeDeleteDialog();
-
-      this.writeToConfig();
+      this.closeDialogDelete();
     },
 
-    closeEditDialog() {
+    closeDialogEdit() {
       this.dialogEdit = false;
       this.$nextTick(() => {
         this.editedProject = Object.assign({}, this.defaultProject);
@@ -307,7 +279,7 @@ export default {
       });
     },
 
-    closeDeleteDialog() {
+    closeDialogDelete() {
       this.dialogDelete = false;
       this.$nextTick(() => {
         this.editedProject = Object.assign({}, this.defaultProject);
@@ -315,15 +287,13 @@ export default {
       });
     },
 
-    save() {
+    saveEditedProject() {
       if (this.editedIndex > -1) {
         Object.assign(this.myProjects[this.editedIndex], this.editedProject);
       } else {
         this.myProjects.push(this.editedProject);
       }
-      this.closeEditDialog();
-
-      this.writeToConfig();
+      this.closeDialogEdit();
     },
 
     editProject(project) {
@@ -358,10 +328,6 @@ export default {
           project.name = path.basename(directory);
         }
       }
-    },
-
-    writeToConfig() {
-      this.$store.set("userData.myProjects", this.myProjects);
     },
   },
 };
