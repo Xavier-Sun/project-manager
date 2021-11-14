@@ -8,12 +8,12 @@ const routes = [
   {
     path: "/",
     name: "Home",
-    component: Home
+    component: Home,
   },
   {
     path: "/settings",
     name: "Settings",
-    component: () => import("../views/Settings.vue")
+    component: () => import("../views/Settings.vue"),
   },
 ]
 
