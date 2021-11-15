@@ -16,7 +16,7 @@
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
           <v-btn @click="labels.push(defaultLabel)"> New Label </v-btn>
-          <v-dialog v-model="dialogEditCommand">
+          <v-dialog v-model="dialogEditCommand" max-width="500px">
             <v-card>
               <v-card-title class="text-h5"> Edit Command </v-card-title>
               <v-card-text>
@@ -168,16 +168,24 @@ export default {
     dialogEditCommand(value) {
       value || this.closeDialogEditCommand();
     },
-
-    labels(value) {
-      this.$store.set("userData.labels", value);
-    },
-    languages(value) {
-      this.$store.set("userData.languages", value);
-    },
   },
 
   methods: {
+    storeLabels() {
+      this.$store.set("userData.labels", this.labels);
+    },
+    storeLanguages() {
+      this.$store.set("userData.languages", this.languages);
+    },
+
+    closeDialogDeleteLabel() {
+      this.dialogDeleteLabel = false;
+      this.$nextTick(() => {
+        this.editedLabelIndex = -1;
+        this.editedLabel = Object.assign({}, this.defaultLabel);
+      });
+    },
+
     deleteLabel(label) {
       this.editedLabelIndex = this.labels.indexOf(label);
       this.editedLabel = Object.assign({}, label);
@@ -186,38 +194,28 @@ export default {
 
     deleteLabelConfirm() {
       this.labels.splice(this.editedLabelIndex, 1);
+      this.storeLabels();
       this.closeDialogDeleteLabel();
-    },
-
-    closeDialogDeleteLabel() {
-      this.dialogDeleteLabel = false;
-      this.$nextTick(() => {
-        this.editedLabel = Object.assign({}, this.defaultLabel);
-        this.editedLabelIndex = -1;
-      });
     },
 
     closeDialogEditCommand() {
       this.dialogEditCommand = false;
       this.$nextTick(() => {
-        this.editedLabel = Object.assign({}, this.defaultLabel);
         this.editedLabelIndex = -1;
-        this.editedCommand = Object.assign({}, this.defaultCommand);
+        this.editedLabel = Object.assign({}, this.defaultLabel);
         this.editedCommandIndex = -1;
+        this.editedCommand = Object.assign({}, this.defaultCommand);
       });
     },
 
     createAndEditCommand(label) {
       this.editedLabelIndex = this.labels.indexOf(label);
       this.labels[this.editedLabelIndex].commands.push(this.defaultCommand);
-      this.$set(
-        this.labels,
-        this.editedLabelIndex,
-        this.labels[this.editedLabelIndex]
+      this.storeLabels();
+      this.editCommand(
+        label,
+        this.labels[this.editedLabelIndex].commands.length - 1
       );
-      const commandIndex =
-        this.labels[this.editedLabelIndex].commands.length - 1;
-      this.editCommand(label, commandIndex);
     },
 
     editCommand(label, commandIndex) {
@@ -236,11 +234,7 @@ export default {
         this.editedCommandIndex,
         1
       );
-      this.$set(
-        this.labels,
-        this.editedLabelIndex,
-        this.labels[this.editedLabelIndex]
-      );
+      this.storeLabels();
       this.closeDialogEditCommand();
     },
 
@@ -249,9 +243,8 @@ export default {
         {},
         this.editedCommand
       );
-      if (this.editedLabelIndex > -1) {
-        this.$set(this.labels, this.editedLabelIndex, this.editedLabel);
-      }
+      this.$set(this.labels, this.editedLabelIndex, this.editedLabel);
+      this.storeLabels();
       this.closeDialogEditCommand();
     },
   },
