@@ -47,23 +47,64 @@ export default {
 
   mounted() {
     const defaultLanguages = [
+      "Assembly",
       "C",
       "C++",
       "C#",
+      "CG",
+      "CSS",
+      "GLSL",
+      "Go",
+      "HLSL",
+      "HTML",
+      "Ini",
+      "JSON",
       "Java",
       "JavaScript",
-      "Maxscript",
+      "Lua",
+      "MATLAB",
+      "Makefile",
+      "Markdown",
+      "MaxScript",
+      "Objective-C",
+      "Perl",
+      "PHP",
       "Python",
+      "R",
+      "Ruby",
       "Rust",
+      "Shaderlab",
+      "Shell",
+      "SQL",
+      "Swift",
+      "TypeScript",
+      "XML",
     ];
     const defaultLabels = [
+      {
+        name: "CMake",
+        commands: [
+          {
+            name: "cmake",
+            script: "cd build; cmake ..",
+          },
+        ],
+      },
+      {
+        name: "Git",
+        commands: [
+          {
+            name: "git pull",
+            script: "git pull",
+          },
+          {
+            name: "git push",
+            script: "git push",
+          },
+        ],
+      },
       { name: "NodeJS", commands: [] },
       { name: "Unity", commands: [] },
-      { name: "Windows", commands: [] },
-      { name: "Linux", commands: [] },
-      { name: "CMake", commands: [] },
-      { name: "Cross Platform", commands: [] },
-      { name: "Git", commands: [] },
     ];
 
     this.setupUserData("languages", defaultLanguages);
