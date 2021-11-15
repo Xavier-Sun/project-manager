@@ -30,7 +30,7 @@
                         v-model="editedProject.directory"
                         label="Directory"
                         append-icon="mdi-dots-horizontal"
-                        @click:append="selectLocalPath(editedProject)"
+                        @click:append="selectDirectory(editedProject)"
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12">
@@ -188,7 +188,7 @@ export default {
     dialogEdit: false,
     dialogDelete: false,
 
-    editedIndex: -1,
+    editedProjectIndex: -1,
     editedProject: {
       name: "New Project",
       languages: [],
@@ -219,7 +219,7 @@ export default {
     },
 
     formTitle() {
-      return this.editedIndex === -1 ? "Add Project" : "Edit Project";
+      return this.editedProjectIndex === -1 ? "Add Project" : "Edit Project";
     },
   },
 
@@ -243,7 +243,7 @@ export default {
       {
         icon: "mdi-microsoft-visual-studio-code",
         label: "Open in Visual Studio Code",
-        do: this.openProjectInCode,
+        do: this.openProjectInVisualStudioCode,
       },
     ];
 
@@ -259,53 +259,55 @@ export default {
     dialogDelete(value) {
       value || this.closeDialogDelete();
     },
-
-    myProjects(value) {
-      this.$store.set("userData.myProjects", value);
-    },
   },
 
   methods: {
+    storeMyProjects() {
+      this.$store.set("userData.myProjects", this.myProjects);
+    },
+
+    closeDialogDelete() {
+      this.dialogDelete = false;
+      this.$nextTick(() => {
+        this.editedProjectIndex = -1;
+        this.editedProject = Object.assign({}, this.defaultProject);
+      });
+    },
+
+    removeProject(project) {
+      this.editedProjectIndex = this.myProjects.indexOf(project);
+      this.editedProject = Object.assign({}, project);
+      this.dialogDelete = true;
+    },
+
     removeProjectConfirm() {
-      this.myProjects.splice(this.editedIndex, 1);
+      this.myProjects.splice(this.editedProjectIndex, 1);
+      this.storeMyProjects();
       this.closeDialogDelete();
     },
 
     closeDialogEdit() {
       this.dialogEdit = false;
       this.$nextTick(() => {
+        this.editedProjectIndex = -1;
         this.editedProject = Object.assign({}, this.defaultProject);
-        this.editedIndex = -1;
       });
-    },
-
-    closeDialogDelete() {
-      this.dialogDelete = false;
-      this.$nextTick(() => {
-        this.editedProject = Object.assign({}, this.defaultProject);
-        this.editedIndex = -1;
-      });
-    },
-
-    saveEditedProject() {
-      if (this.editedIndex > -1) {
-        this.$set(this.myProjects, this.editedIndex, this.editedProject);
-      } else {
-        this.myProjects.push(this.editedProject);
-      }
-      this.closeDialogEdit();
     },
 
     editProject(project) {
-      this.editedIndex = this.myProjects.indexOf(project);
+      this.editedProjectIndex = this.myProjects.indexOf(project);
       this.editedProject = Object.assign({}, project);
       this.dialogEdit = true;
     },
 
-    removeProject(project) {
-      this.editedIndex = this.myProjects.indexOf(project);
-      this.editedProject = Object.assign({}, project);
-      this.dialogDelete = true;
+    saveEditedProject() {
+      if (this.editedProjectIndex > -1) {
+        this.$set(this.myProjects, this.editedProjectIndex, this.editedProject);
+      } else {
+        this.myProjects.push(this.editedProject);
+      }
+      this.storeMyProjects();
+      this.closeDialogEdit();
     },
 
     openProjectInFolder(project) {
@@ -314,13 +316,13 @@ export default {
       }
     },
 
-    openProjectInCode(project) {
+    openProjectInVisualStudioCode(project) {
       if (project.directory) {
         child_process.exec(`code "${project.directory}"`);
       }
     },
 
-    selectLocalPath(project) {
+    selectDirectory(project) {
       let directory = electron.ipcRenderer.sendSync("select-directory");
       if (directory) {
         project.directory = directory;
