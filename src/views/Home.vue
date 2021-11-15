@@ -122,9 +122,26 @@
     </template>
     <template #[`item.labels`]="{ item }">
       <v-chip-group>
-        <v-chip small v-for="(label, index) in item.labels" :key="index">
-          {{ label }}
-        </v-chip>
+        <v-menu v-for="(label, index) in item.labels" :key="index">
+          <template #activator="{ on, attrs }">
+            <v-chip small v-bind="attrs" v-on="on">
+              {{ label }}
+            </v-chip>
+          </template>
+          <v-list dense>
+            <v-list-item-group>
+              <v-list-item
+                v-for="(command, index) in getLabel(label).commands"
+                :key="index"
+                @click="executeScript(item, command.script)"
+              >
+                <v-list-item-title>
+                  {{ command.name }}
+                </v-list-item-title>
+              </v-list-item>
+            </v-list-item-group>
+          </v-list>
+        </v-menu>
       </v-chip-group>
     </template>
     <template #[`item.actions`]="{ item }">
@@ -330,6 +347,21 @@ export default {
           project.name = path.basename(directory);
         }
       }
+    },
+
+    getLabel(labelName) {
+      for (let i = 0; i < this.labels.length; ++i) {
+        if (this.labels[i].name === labelName) {
+          return this.labels[i];
+        }
+      }
+      return null;
+    },
+
+    executeScript(project, script) {
+      script = script.replaceAll("PROJECT_NAME", project.name);
+      script = script.replaceAll("PROJECT_DIR", project.directory);
+      child_process.exec(script);
     },
   },
 };
