@@ -41,22 +41,24 @@
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12">
-                      <v-combobox
+                      <v-select
                         v-model="editedProject.languages"
                         label="Language"
+                        chips
                         clearable
                         multiple
                         :items="languages"
-                      ></v-combobox>
+                      ></v-select>
                     </v-col>
                     <v-col cols="12">
-                      <v-combobox
+                      <v-select
                         v-model="editedProject.labels"
                         label="Labels"
+                        chips
                         clearable
                         multiple
                         :items="labelNames"
-                      ></v-combobox>
+                      ></v-select>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -105,11 +107,11 @@
       </v-toolbar>
     </template>
     <template #[`item.name`]="{ item }">
-      <b>{{ item.name }}</b>
+      <span>{{ item.name }}</span>
     </template>
     <template #[`item.languages`]="{ item }">
       <v-chip-group>
-        <v-chip small v-for="(language, index) in item.languages" :key="index">
+        <v-chip v-for="(language, index) in item.languages" :key="index">
           {{ language }}
         </v-chip>
       </v-chip-group>
@@ -124,7 +126,7 @@
       <v-chip-group>
         <v-menu v-for="(label, index) in item.labels" :key="index">
           <template #activator="{ on, attrs }">
-            <v-chip small v-bind="attrs" v-on="on">
+            <v-chip v-bind="attrs" v-on="on">
               {{ label }}
             </v-chip>
           </template>

@@ -77,7 +77,7 @@
           :return-value.sync="item.name"
           @save="$store.set('userData.labels', labels)"
         >
-          <v-chip>{{ item.name }}</v-chip>
+          {{ item.name }}
           <template #input>
             <v-text-field
               v-model="item.name"
