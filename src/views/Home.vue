@@ -361,9 +361,10 @@ export default {
     },
 
     executeScript(project, script) {
-      script = script.replaceAll("PROJECT_NAME", project.name);
-      script = script.replaceAll("PROJECT_DIR", project.directory);
-      child_process.exec(script);
+      child_process.execSync(script, {
+        cwd: project.directory,
+        env: { PROJECT_NAME: project.name, PROJECT_DIR: project.directory },
+      });
     },
   },
 };
