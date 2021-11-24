@@ -59,6 +59,12 @@
               <v-card-title class="text-h5">
                 Are you sure you want to delete this label?
               </v-card-title>
+              <v-card-text>
+                <v-checkbox
+                  v-model="deleteCompletely"
+                  label="Remove this label from all projects at the same time"
+                ></v-checkbox>
+              </v-card-text>
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="blue" text @click="closeDialogDeleteLabel">
@@ -122,6 +128,8 @@ export default {
 
     dialogEditCommand: false,
     dialogDeleteLabel: false,
+
+    deleteCompletely: false,
 
     editedLabelIndex: -1,
     editedLabel: {
@@ -199,6 +207,18 @@ export default {
 
     deleteLabelConfirm() {
       this.labels.splice(this.editedLabelIndex, 1);
+
+      if (this.deleteCompletely) {
+        let labelName = this.editedLabel.name;
+        let myProjects = this.$store.get("userData.myProjects");
+        myProjects.forEach((project) => {
+          project.labels = project.labels.filter((label) => {
+            return label !== labelName;
+          });
+        });
+        this.$store.set("userData.myProjects", myProjects);
+      }
+
       this.storeLabels();
       this.closeDialogDeleteLabel();
     },
