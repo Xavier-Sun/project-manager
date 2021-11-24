@@ -133,7 +133,7 @@
           <v-list dense>
             <v-list-item-group>
               <v-list-item
-                v-for="(command, index) in getLabel(label).commands"
+                v-for="(command, index) in getCommands(label)"
                 :key="index"
                 @click="executeScript(item, command.script)"
               >
@@ -349,6 +349,11 @@ export default {
           project.name = path.basename(directory);
         }
       }
+    },
+
+    getCommands(labelName) {
+      let label = this.getLabel(labelName);
+      return label ? label.commands : [];
     },
 
     getLabel(labelName) {
