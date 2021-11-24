@@ -94,16 +94,24 @@ export default {
         name: "Git",
         commands: [
           {
-            name: "git pull",
+            name: "pull",
             script: "git pull",
           },
           {
-            name: "git push",
+            name: "push",
             script: "git push",
           },
         ],
       },
-      { name: "NodeJS", commands: [] },
+      {
+        name: "NodeJS",
+        commands: [
+          {
+            name: "serve",
+            script: "npm run serve",
+          },
+        ],
+      },
       { name: "Unity", commands: [] },
     ];
 
