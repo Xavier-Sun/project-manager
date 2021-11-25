@@ -15,7 +15,7 @@
           <v-toolbar-title> Labels </v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
-          <v-btn @click="createLabel"> New Label </v-btn>
+          <v-btn color="primary" @click="createLabel"> New Label </v-btn>
           <v-dialog v-model="dialogEditCommand" max-width="500px">
             <v-card>
               <v-card-title class="text-h5"> Edit Command </v-card-title>
