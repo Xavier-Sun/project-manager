@@ -5,6 +5,7 @@ import { createProtocol } from "vue-cli-plugin-electron-builder/lib"
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer"
 import Store from "electron-store"
 import path from "path"
+import fs from "fs"
 
 const installVueDevtoolsOnReady = false
 const isDevelopment = process.env.NODE_ENV !== "production"
@@ -127,4 +128,76 @@ ipcMain.on("select-directory", (event, message) => {
   }).then((result) => {
     event.returnValue = result.canceled ? null : result.filePaths[0]
   })
+})
+
+function iterateFiles(directory, callback) {
+  fs.readdirSync(directory).forEach(name => {
+    let targetPath = path.join(directory, name);
+    let stat = fs.statSync(targetPath);
+    if (stat.isFile()) {
+      callback(targetPath);
+    } else if (stat.isDirectory()) {
+      iterateFiles(targetPath, callback);
+    }
+  });
+}
+
+const LANGUAGES = {
+  "Assembly": [,],
+  "C": [".c",],
+  "C++": [".cc", ".cpp",],
+  "C#": [".cs",],
+  "CG": [".cginc",],
+  "CSS": [".css",],
+  "GLSL": [".vert", ".frag",],
+  "Go": [".go",],
+  "HLSL": [".hlsl",],
+  "HTML": [".html",],
+  "Ini": [".ini",],
+  "JSON": [".json",],
+  "Java": [".java",],
+  "JavaScript": [".js",],
+  "Lua": [".lua",],
+  "MATLAB": [".m",],
+  "Makefile": [,],
+  "Markdown": [".md",],
+  "MaxScript": [".maxscript",],
+  "Objective-C": [".mm",],
+  "Perl": [".pl",],
+  "PHP": [".php",],
+  "Python": [".py",],
+  "R": [".r",],
+  "Ruby": [".rb",],
+  "Rust": [".rs",],
+  "Shaderlab": [".shader",],
+  "Shell": [".bat",],
+  "SQL": [".sql",],
+  "Swift": [".swift",],
+  "TypeScript": [".ts",],
+  "XML": [".xml",],
+};
+
+function getLanguage(targetPath) {
+  let extname = path.extname(targetPath);
+  for (let language in LANGUAGES) {
+    let names = LANGUAGES[language];
+    for (let i = 0; i < names.length; ++i) {
+      if (extname.toLowerCase() === names[i]) {
+        return language;
+      }
+    }
+  }
+  return null;
+}
+
+ipcMain.on("get-project-languages", (event, message) => {
+  let directory = message;
+  let languages = [];
+  iterateFiles(directory, targetPath => {
+    let language = getLanguage(targetPath);
+    if (language && languages.indexOf(language) === -1) {
+      languages.push(language);
+    }
+  });
+  event.returnValue = languages;
 })

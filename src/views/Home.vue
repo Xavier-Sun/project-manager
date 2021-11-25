@@ -349,6 +349,11 @@ export default {
         if (project.name === this.defaultProject.name) {
           project.name = path.basename(directory);
         }
+        let languages = electron.ipcRenderer.sendSync(
+          "get-project-languages",
+          project.directory
+        );
+        project.languages = languages;
       }
     },
 
