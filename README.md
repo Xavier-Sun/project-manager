@@ -7,6 +7,7 @@ A project management tool. It can manage almost all your projects in one stop.
 - [Background](#background)
 - [Install](#install)
 - [Usage](#usage)
+- [License](#license)
 
 ## Background
 
@@ -45,3 +46,7 @@ To compile and minify for production:
 ```
 yarn electron:build
 ```
+
+## License
+
+[MIT](LICENSE)
