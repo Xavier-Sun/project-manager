@@ -122,6 +122,9 @@ if (isDevelopment) {
 }
 
 ipcMain.on("select-directory", (event, message) => {
+  if (message) {
+    console.log("No parameters required.");
+  }
   dialog.showOpenDialog(mainWindow, {
     title: "Select a directory...",
     properties: ["openDirectory", "showHiddenFiles"]
@@ -142,48 +145,375 @@ function iterateFiles(directory, callback) {
   });
 }
 
-const LANGUAGES = {
-  "Assembly": [,],
-  "C": [".c",],
-  "C++": [".cc", ".cpp",],
-  "C#": [".cs",],
-  "CG": [".cginc",],
-  "CSS": [".css",],
-  "GLSL": [".vert", ".frag",],
-  "Go": [".go",],
-  "HLSL": [".hlsl",],
-  "HTML": [".html",],
-  "Ini": [".ini",],
-  "JSON": [".json",],
-  "Java": [".java",],
-  "JavaScript": [".js",],
-  "Lua": [".lua",],
-  "MATLAB": [".m",],
-  "Makefile": [,],
-  "Markdown": [".md",],
-  "MaxScript": [".maxscript",],
-  "Objective-C": [".mm",],
-  "Perl": [".pl",],
-  "PHP": [".php",],
-  "Python": [".py",],
-  "R": [".r",],
-  "Ruby": [".rb",],
-  "Rust": [".rs",],
-  "Shaderlab": [".shader",],
-  "Shell": [".bat",],
-  "SQL": [".sql",],
-  "Swift": [".swift",],
-  "TypeScript": [".ts",],
-  "XML": [".xml",],
-};
+const LANGUAGES = [
+  {
+    name: "Assembly",
+    extensions: [],
+  },
+  {
+    name: "C",
+    extensions: [
+      ".c",
+      ".i",
+    ],
+  },
+  {
+    name: "C++",
+    extensions: [
+      ".cc",
+      ".cpp",
+      ".cxx",
+      ".c++",
+      ".hpp",
+      ".hh",
+      ".hxx",
+      ".h++",
+      ".h",
+      ".ii",
+    ],
+  },
+  {
+    name: "C#",
+    extensions: [
+      ".cs",
+      ".csx",
+      ".cake",
+    ],
+  },
+  {
+    name: "CG",
+    extensions: [
+      ".cg",
+    ],
+  },
+  {
+    name: "CSS",
+    extensions: [
+      ".css",
+    ],
+  },
+  {
+    name: "GLSL",
+    extensions: [
+      ".vs",
+      ".fs",
+      ".gs",
+      ".comp",
+      ".vert",
+      ".tesc",
+      ".tese",
+      ".frag",
+      ".geom",
+      ".glsl",
+    ],
+  },
+  {
+    name: "Go",
+    extensions: [
+      ".go",
+    ],
+  },
+  {
+    name: "HLSL",
+    extensions: [
+      ".hlsl",
+      ".hlsli",
+      ".fx",
+      ".fxh",
+      ".vsh",
+      ".psh",
+      ".cginc",
+      ".compute",
+      ".sf",
+    ],
+  },
+  {
+    name: "HTML",
+    extensions: [
+      ".html",
+      ".htm",
+      ".shtml",
+      ".xhtml",
+      ".xht",
+      ".mdoc",
+      ".jsp",
+      ".asp",
+      ".aspx",
+      ".jshtm",
+    ],
+  },
+  {
+    name: "Ini",
+    extensions: [
+      ".ini",
+    ],
+  },
+  {
+    name: "JSON",
+    extensions: [
+      ".json",
+      ".bowerrc",
+      ".jscsrc",
+      ".webmanifest",
+      ".js.map",
+      ".css.map",
+      ".ts.map",
+      ".har",
+      ".jslintrc",
+      ".jsonld",
+      ".geojson",
+    ],
+  },
+  {
+    name: "Java",
+    extensions: [
+      ".java",
+      ".jav",
+    ],
+  },
+  {
+    name: "JavaScript",
+    extensions: [
+      ".js",
+      ".es6",
+      ".mjs",
+      ".cjs",
+      ".pac",
+    ],
+  },
+  {
+    name: "Lua",
+    extensions: [
+      ".lua",
+    ],
+  },
+  {
+    name: "MATLAB",
+    extensions: [
+      ".m",
+    ],
+  },
+  {
+    name: "Makefile",
+    extensions: [
+      ".mak",
+      ".mk",
+    ],
+  },
+  {
+    name: "Markdown",
+    extensions: [
+      ".md",
+    ],
+  },
+  {
+    name: "MaxScript",
+    extensions: [
+      ".ms",
+      ".mcr",
+    ],
+  },
+  {
+    name: "Objective-C",
+    extensions: [
+      ".m",
+      ".mm",
+    ],
+  },
+  {
+    name: "Perl",
+    extensions: [
+      ".pl",
+      ".pm",
+      ".pod",
+      ".t",
+      ".PL",
+      ".psgi",
+    ],
+  },
+  {
+    name: "PHP",
+    extensions: [
+      ".php",
+      ".php4",
+      ".php5",
+      ".phtml",
+      ".ctp",
+    ],
+  },
+  {
+    name: "Python",
+    extensions: [
+      ".py",
+      ".rpy",
+      ".pyw",
+      ".cpy",
+      ".gyp",
+      ".gypi",
+      ".pyi",
+      ".ipy",
+    ],
+  },
+  {
+    name: "R",
+    extensions: [
+      ".r",
+      ".rhistory",
+      ".rprofile",
+      ".rt",
+    ],
+  },
+  {
+    name: "Ruby",
+    extensions: [
+      ".rb",
+      ".rbx",
+      ".rjs",
+      ".gemspec",
+      ".rake",
+      ".ru",
+      ".erb",
+      ".podspec",
+      ".rbi",
+    ],
+  },
+  {
+    name: "Rust",
+    extensions: [
+      ".rs",
+    ],
+  },
+  {
+    name: "Shaderlab",
+    extensions: [
+      ".shader",
+    ],
+  },
+  {
+    name: "Shell",
+    extensions: [
+      ".sh",
+      ".bash",
+      ".bashrc",
+      ".bash_aliases",
+      ".bash_profile",
+      ".bash_login",
+      ".ebuild",
+      ".profile",
+      ".bash_logout",
+      ".xprofile",
+      ".xsession",
+      ".xsessionrc",
+      ".Xsession",
+      ".zsh",
+      ".zshrc",
+      ".zprofile",
+      ".zlogin",
+      ".zlogout",
+      ".zshenv",
+      ".zsh-theme",
+      ".ksh",
+      ".csh",
+      ".cshrc",
+      ".tcshrc",
+      ".yashrc",
+      ".yash_profile",
+    ],
+  },
+  {
+    name: "SQL",
+    extensions: [
+      ".sql",
+      ".dsql",
+    ],
+  },
+  {
+    name: "Swift",
+    extensions: [
+      ".swift",
+    ],
+  },
+  {
+    name: "TypeScript",
+    extensions: [
+      ".ts",
+    ],
+  },
+  {
+    name: "XML",
+    extensions: [
+      ".xml",
+      ".xsd",
+      ".ascx",
+      ".atom",
+      ".axml",
+      ".axaml",
+      ".bpmn",
+      ".cpt",
+      ".csl",
+      ".csproj",
+      ".csproj.user",
+      ".dita",
+      ".ditamap",
+      ".dtd",
+      ".ent",
+      ".mod",
+      ".dtml",
+      ".fsproj",
+      ".fxml",
+      ".iml",
+      ".isml",
+      ".jmx",
+      ".launch",
+      ".menu",
+      ".mxml",
+      ".nuspec",
+      ".opml",
+      ".owl",
+      ".proj",
+      ".props",
+      ".pt",
+      ".publishsettings",
+      ".pubxml",
+      ".pubxml.user",
+      ".rbxlx",
+      ".rbxmx",
+      ".rdf",
+      ".rng",
+      ".rss",
+      ".shproj",
+      ".storyboard",
+      ".svg",
+      ".targets",
+      ".tld",
+      ".tmx",
+      ".vbproj",
+      ".vbproj.user",
+      ".vcxproj",
+      ".vcxproj.filters",
+      ".wsdl",
+      ".wxi",
+      ".wxl",
+      ".wxs",
+      ".xaml",
+      ".xbl",
+      ".xib",
+      ".xlf",
+      ".xliff",
+      ".xpdl",
+      ".xul",
+      ".xoml",
+    ],
+  },
+]
 
 function getLanguage(targetPath) {
   let extname = path.extname(targetPath);
-  for (let language in LANGUAGES) {
-    let names = LANGUAGES[language];
-    for (let i = 0; i < names.length; ++i) {
-      if (extname.toLowerCase() === names[i]) {
-        return language;
+  for (let i = 0; i < LANGUAGES.length; ++i) {
+    let language = LANGUAGES[i];
+    for (let j = 0; j < language.extensions.length; ++j) {
+      if (extname.toLowerCase() === language.extensions[j]) {
+        return language.name;
       }
     }
   }
